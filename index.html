@@ -1,1 +1,162 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sürpriz Soru!</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #f3e5f5, #fce4ec);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            text-align: center;
+        }
 
+        #mainContainer {
+            background-color: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        h1 {
+            color: #4a148c;
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            position: relative;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        /* Çirkin Butonu Stili */
+        #uglyBtn {
+            background-color: #ce93d8;
+            color: white;
+        }
+
+        #uglyBtn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(206, 147, 216, 0.5);
+        }
+
+        /* Yakışıklı Butonu Stili */
+        #handsomeBtn {
+            background-color: #f48fb1;
+            color: white;
+            /* Kaçması için pozisyonu JavaScript ile değiştirilecek */
+        }
+
+        /* Başlangıçta gizli olacak kutlama ekranı */
+        #birthdayScreen {
+            display: none;
+        }
+
+        #birthdayScreen h1 {
+            font-size: 48px;
+            color: #d81b60;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        #birthdayScreen p {
+            font-size: 24px;
+            color: #6a1b9a;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="mainContainer">
+        <h1>Henry Cavill yakışıklı mı çirkin mi? 🤔</h1>
+        <div class="button-container">
+            <button id="handsomeBtn">Yakışıklı</button>
+            <button id="uglyBtn">Çirkin</button>
+        </div>
+    </div>
+
+    <div id="birthdayScreen">
+        <h1>🎉 İyi ki doğdun Sena! 🎂</h1>
+        <p>Görünüşe göre doğru cevabı buldun! 😄</p>
+    </div>
+
+    <script>
+        const handsomeBtn = document.getElementById('handsomeBtn');
+        const uglyBtn = document.getElementById('uglyBtn');
+        const mainContainer = document.getElementById('mainContainer');
+        const birthdayScreen = document.getElementById('birthdayScreen');
+
+        // Yakışıklı butonuna fare gelince kaçma efekti
+        handsomeBtn.addEventListener('mouseover', function() {
+            // Butonu sayfa üzerinde serbest hareket edebilir hale getiriyoruz
+            this.style.position = 'fixed';
+            
+            // Ekran sınırları içinde rastgele X ve Y koordinatları hesaplıyoruz
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const buttonWidth = this.offsetWidth;
+            const buttonHeight = this.offsetHeight;
+
+            const randomX = Math.floor(Math.random() * (windowWidth - buttonWidth));
+            const randomY = Math.floor(Math.random() * (windowHeight - buttonHeight));
+
+            // Yeni pozisyonları atıyoruz
+            this.style.left = randomX + 'px';
+            this.style.top = randomY + 'px';
+        });
+
+        // Çirkin butonuna tıklandığında olacaklar
+        uglyBtn.addEventListener('click', function() {
+            // Soru ekranını gizle, kutlama ekranını göster
+            mainContainer.style.display = 'none';
+            handsomeBtn.style.display = 'none';
+            birthdayScreen.style.display = 'block';
+
+            // Konfeti Efekti
+            var duration = 5 * 1000; // Konfeti 5 saniye sürecek
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                var particleCount = 50 * (timeLeft / duration);
+                
+                // Ekranın iki yanından konfeti fırlat
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        });
+    </script>
+</body>
+</html>
