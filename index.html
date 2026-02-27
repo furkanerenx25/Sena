@@ -38,7 +38,7 @@
 
         .button-container {
             display: flex;
-            flex-direction: column; /* Mobilde alt alta dursunlar diye */
+            flex-direction: column;
             gap: 15px;
             align-items: center;
             position: relative;
@@ -51,27 +51,30 @@
             border: none;
             border-radius: 12px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            width: 100%; /* Butonlar kutuyu doldursun */
+            width: 100%;
             max-width: 250px;
-            -webkit-tap-highlight-color: transparent; /* Mobilde tıklama parlaklığını kaldırır */
+            -webkit-tap-highlight-color: transparent;
+            /* Tıklama animasyonu için geçiş süresi */
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        /* TIKLAMA ANİMASYONU: Butona basıldığında içine göçer */
+        button:active {
+            transform: scale(0.92) !important;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.2) !important;
         }
 
         #uglyBtn {
             background-color: #ce93d8;
             color: white;
-        }
-
-        #uglyBtn:hover, #uglyBtn:active {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(206, 147, 216, 0.5);
+            box-shadow: 0 5px 15px rgba(206, 147, 216, 0.4);
         }
 
         #handsomeBtn {
             background-color: #f48fb1;
             color: white;
-            position: relative;
-            z-index: 20;
+            box-shadow: 0 5px 15px rgba(244, 143, 177, 0.4);
+            /* Başlangıçta kayma efekti kapalı, JS ile açacağız */
         }
 
         #birthdayScreen {
@@ -114,45 +117,64 @@
         const mainContainer = document.getElementById('mainContainer');
         const birthdayScreen = document.getElementById('birthdayScreen');
 
-        // Kaçma fonksiyonu
+        let isFirstMove = true;
+
         function moveButton(e) {
-            // Eğer mobilden dokunuluyorsa, tıklama işlemini tamamen engelle
+            // Dokunmatiği algılayınca varsayılan tıklamayı iptal et
             if(e.type === 'touchstart') {
                 e.preventDefault();
             }
 
-            handsomeBtn.style.position = 'fixed';
+            // Butonun o anki boyutunu ve konumunu al
+            const rect = handsomeBtn.getBoundingClientRect();
+
+            // İlk kaçışta butonun yapısını bozmamak için hazırlık yapıyoruz
+            if (isFirstMove) {
+                handsomeBtn.style.transition = 'none'; // İlk anda kayma olmasın diye kapat
+                handsomeBtn.style.position = 'fixed';
+                handsomeBtn.style.left = rect.left + 'px';
+                handsomeBtn.style.top = rect.top + 'px';
+                handsomeBtn.style.width = rect.width + 'px'; // Boyutu sabit kalsın
+                handsomeBtn.style.zIndex = '100';
+                isFirstMove = false;
+                
+                // Tarayıcıya yeni ayarları zorla okutuyoruz
+                handsomeBtn.offsetHeight; 
+                
+                // Kayma (süzülme) animasyonunu aktif ediyoruz! (0.4 saniyede süzülecek)
+                handsomeBtn.style.transition = 'left 0.4s ease-out, top 0.4s ease-out, transform 0.1s ease';
+            }
             
-            // Butonun ekranın dışına taşmasını engellemek için güvenli alan hesaplıyoruz
-            const padding = 20;
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
-            const buttonWidth = handsomeBtn.offsetWidth;
-            const buttonHeight = handsomeBtn.offsetHeight;
+            const padding = 20;
 
-            const maxX = windowWidth - buttonWidth - padding;
-            const maxY = windowHeight - buttonHeight - padding;
+            const maxX = windowWidth - rect.width - padding;
+            const maxY = windowHeight - rect.height - padding;
 
             const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
             const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
 
+            // Butonu yeni konumuna gönder
             handsomeBtn.style.left = randomX + 'px';
             handsomeBtn.style.top = randomY + 'px';
         }
 
-        // Hem bilgisayarda fare ile üzerine gelince hem de telefonda dokunmaya çalışınca kaçsın
+        // Hem bilgisayarda fare yaklaşınca hem telefonda dokunmaya çalışınca kaçsın
         handsomeBtn.addEventListener('mouseover', moveButton);
         handsomeBtn.addEventListener('touchstart', moveButton, {passive: false});
         
-        // Kazara tıklanmayı tamamen iptal et
+        // Tıklamayı kazara algılarsa diye tamamen etkisiz hale getiriyoruz
         handsomeBtn.addEventListener('click', function(e) {
             e.preventDefault();
         });
 
-        // Çirkin butonuna tıklandığında (veya telefonda dokunulduğunda)
+        // Çirkin butonuna tıklandığında (veya dokunulduğunda) kutlama başlasın
         uglyBtn.addEventListener('click', function() {
+            // Soru ekranı kaybolsun
             mainContainer.style.display = 'none';
             handsomeBtn.style.display = 'none';
+            // Kutlama ekranı gelsin
             birthdayScreen.style.display = 'block';
 
             // Konfeti Efekti
