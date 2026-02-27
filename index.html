@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sürpriz Soru!</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
@@ -16,74 +16,80 @@
             align-items: center;
             background: linear-gradient(135deg, #f3e5f5, #fce4ec);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
+            overflow: hidden; /* Ekranın kaymasını engeller */
             text-align: center;
         }
 
         #mainContainer {
             background-color: white;
-            padding: 40px;
+            padding: 30px 20px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             z-index: 10;
+            width: 85%;
+            max-width: 400px;
         }
 
         h1 {
             color: #4a148c;
-            font-size: 28px;
+            font-size: 24px;
             margin-bottom: 30px;
         }
 
         .button-container {
             display: flex;
-            gap: 20px;
-            justify-content: center;
+            flex-direction: column; /* Mobilde alt alta dursunlar diye */
+            gap: 15px;
+            align-items: center;
             position: relative;
         }
 
         button {
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 15px 40px;
+            font-size: 20px;
             font-weight: bold;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%; /* Butonlar kutuyu doldursun */
+            max-width: 250px;
+            -webkit-tap-highlight-color: transparent; /* Mobilde tıklama parlaklığını kaldırır */
         }
 
-        /* Çirkin Butonu Stili */
         #uglyBtn {
             background-color: #ce93d8;
             color: white;
         }
 
-        #uglyBtn:hover {
-            transform: scale(1.1);
+        #uglyBtn:hover, #uglyBtn:active {
+            transform: scale(1.05);
             box-shadow: 0 5px 15px rgba(206, 147, 216, 0.5);
         }
 
-        /* Yakışıklı Butonu Stili */
         #handsomeBtn {
             background-color: #f48fb1;
             color: white;
-            /* Kaçması için pozisyonu JavaScript ile değiştirilecek */
+            position: relative;
+            z-index: 20;
         }
 
-        /* Başlangıçta gizli olacak kutlama ekranı */
         #birthdayScreen {
             display: none;
+            padding: 20px;
         }
 
         #birthdayScreen h1 {
-            font-size: 48px;
+            font-size: 40px;
             color: #d81b60;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         #birthdayScreen p {
-            font-size: 24px;
+            font-size: 20px;
             color: #6a1b9a;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -108,34 +114,49 @@
         const mainContainer = document.getElementById('mainContainer');
         const birthdayScreen = document.getElementById('birthdayScreen');
 
-        // Yakışıklı butonuna fare gelince kaçma efekti
-        handsomeBtn.addEventListener('mouseover', function() {
-            // Butonu sayfa üzerinde serbest hareket edebilir hale getiriyoruz
-            this.style.position = 'fixed';
+        // Kaçma fonksiyonu
+        function moveButton(e) {
+            // Eğer mobilden dokunuluyorsa, tıklama işlemini tamamen engelle
+            if(e.type === 'touchstart') {
+                e.preventDefault();
+            }
+
+            handsomeBtn.style.position = 'fixed';
             
-            // Ekran sınırları içinde rastgele X ve Y koordinatları hesaplıyoruz
+            // Butonun ekranın dışına taşmasını engellemek için güvenli alan hesaplıyoruz
+            const padding = 20;
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
-            const buttonWidth = this.offsetWidth;
-            const buttonHeight = this.offsetHeight;
+            const buttonWidth = handsomeBtn.offsetWidth;
+            const buttonHeight = handsomeBtn.offsetHeight;
 
-            const randomX = Math.floor(Math.random() * (windowWidth - buttonWidth));
-            const randomY = Math.floor(Math.random() * (windowHeight - buttonHeight));
+            const maxX = windowWidth - buttonWidth - padding;
+            const maxY = windowHeight - buttonHeight - padding;
 
-            // Yeni pozisyonları atıyoruz
-            this.style.left = randomX + 'px';
-            this.style.top = randomY + 'px';
+            const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
+
+            handsomeBtn.style.left = randomX + 'px';
+            handsomeBtn.style.top = randomY + 'px';
+        }
+
+        // Hem bilgisayarda fare ile üzerine gelince hem de telefonda dokunmaya çalışınca kaçsın
+        handsomeBtn.addEventListener('mouseover', moveButton);
+        handsomeBtn.addEventListener('touchstart', moveButton, {passive: false});
+        
+        // Kazara tıklanmayı tamamen iptal et
+        handsomeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
         });
 
-        // Çirkin butonuna tıklandığında olacaklar
+        // Çirkin butonuna tıklandığında (veya telefonda dokunulduğunda)
         uglyBtn.addEventListener('click', function() {
-            // Soru ekranını gizle, kutlama ekranını göster
             mainContainer.style.display = 'none';
             handsomeBtn.style.display = 'none';
             birthdayScreen.style.display = 'block';
 
             // Konfeti Efekti
-            var duration = 5 * 1000; // Konfeti 5 saniye sürecek
+            var duration = 5 * 1000;
             var animationEnd = Date.now() + duration;
             var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
 
@@ -152,7 +173,6 @@
 
                 var particleCount = 50 * (timeLeft / duration);
                 
-                // Ekranın iki yanından konfeti fırlat
                 confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
                 confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
             }, 250);
